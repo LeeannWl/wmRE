@@ -2,7 +2,9 @@ from bert4keras.models import build_transformer_model
 from bert4keras.backend import keras, K, batch_gather
 from bert4keras.layers import LayerNormalization
 from bert4keras.layers import Loss
-from bert4keras.optimizers import extend_with_exponential_moving_average, Adam
+# from bert4keras.optimizers import extend_with_exponential_moving_average, Adam
+from bert4keras.optimizers import  Adam
+
 from keras.layers import Input, Dense, Lambda, Reshape
 from keras.models import Model
 
