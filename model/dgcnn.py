@@ -85,4 +85,7 @@ def DGCNNModel(bert_config_path, bert_checkpoint_path, num_rels,lr):
         [subject_preds, object_preds]
     )
 
+    optimizer = extend_with_exponential_moving_average(Adam, name='AdamEMA')(lr)
+    train_model.compile(optimizer=optimizer)
+
     return subject_model, object_model, train_model

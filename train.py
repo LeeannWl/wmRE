@@ -39,11 +39,12 @@ class SPO(tuple):
 class Evaluator(keras.callbacks.Callback):
     """评估与保存
     """
-    def __init__(self,tokenizer,optimizer,train_model,object_model,subject_model,dev_data,id2rel):
+    # def __init__(self,tokenizer,optimizer,train_model,object_model,subject_model,dev_data,id2rel):
+    def __init__(self, tokenizer, train_model, object_model, subject_model, dev_data, id2rel):
         self.best_val_f1 = 0.
         self.train_model = train_model
         self.dev_data = dev_data
-        self.optimizer = optimizer
+        # self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.object_model = object_model
         self.subject_model = subject_model
@@ -124,12 +125,12 @@ class Evaluator(keras.callbacks.Callback):
 
 
     def on_epoch_end(self, epoch, logs=None):
-        self.optimizer.apply_ema_weights()
+        # self.optimizer.apply_ema_weights()
         f1, precision, recall = self.evaluate(self.dev_data,)
         if f1 >= self.best_val_f1:
             self.best_val_f1 = f1
             self.train_model.save_weights('best_model.weights')
-        self.optimizer.reset_old_weights()
+        # self.optimizer.reset_old_weights()
         print(
             'f1: %.5f, precision: %.5f, recall: %.5f, best f1: %.5f\n' %
             (f1, precision, recall, self.best_val_f1)
@@ -147,9 +148,10 @@ if __name__ == '__main__':
     train_generator = data_generator(train_data, tokenizer, predicate2id, args.maxlen, args.batch_size)
     subject_model, object_model, train_model = DGCNNModel(args.bert_config_path, args.bert_checkpoint_path,num_predicate,args.lr)
 
-    optimizer = extend_with_exponential_moving_average(Adam, name='AdamEMA')(args.lr)
-    train_model.compile(optimizer=optimizer)
-    evaluator = Evaluator(tokenizer, optimizer, train_model, object_model, subject_model, dev_data, id2predicate)
+    # optimizer = extend_with_exponential_moving_average(Adam, name='AdamEMA')(args.lr)
+    # train_model.compile(optimizer=optimizer)
+    # evaluator = Evaluator(tokenizer, optimizer, train_model, object_model, subject_model, dev_data, id2predicate)
+    evaluator = Evaluator(tokenizer, train_model, object_model, subject_model, dev_data, id2predicate)
     train_model.fit(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
