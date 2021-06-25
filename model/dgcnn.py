@@ -39,7 +39,7 @@ def extract_subject(inputs):
     subject = K.concatenate([start, end], 2)
     return subject[:, 0]
 
-def DGCNNModel(bert_config_path, bert_checkpoint_path, num_rels,lr):
+def DGCNNModel(bert_config_path, bert_checkpoint_path,lr, num_rels):
     # 加载预训练模型
     bert = build_transformer_model(
         config_path=bert_config_path,
@@ -85,7 +85,7 @@ def DGCNNModel(bert_config_path, bert_checkpoint_path, num_rels,lr):
         [subject_preds, object_preds]
     )
 
-    optimizer = extend_with_exponential_moving_average(Adam, name='AdamEMA')(lr)
-    train_model.compile(optimizer=optimizer)
+    # optimizer = extend_with_exponential_moving_average(Adam, name='AdamEMA')(lr)
+    train_model.compile(optimizer=Adam(lr))
 
     return subject_model, object_model, train_model

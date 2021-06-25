@@ -7,13 +7,31 @@ from bert4keras.snippets import open, to_array
 
 import parse as args
 
+# class SPO(tuple):
+#     """用来存三元组的类
+#     表现跟tuple基本一致，只是重写了 __hash__ 和 __eq__ 方法，
+#     使得在判断两个三元组是否等价时容错性更好。
+#     """
+#     def __init__(self,tokenizer, spo):
+#         super.__init__(self,spo)
+#         self.spox = (
+#             tuple(tokenizer.tokenize(spo[0])),
+#             spo[1],
+#             tuple(tokenizer.tokenize(spo[2])),
+#         )
+#
+#     def __hash__(self):
+#         return self.spox.__hash__()
+#
+#     def __eq__(self, spo):
+#         return self.spox == spo.spox
+
 class SPO(tuple):
     """用来存三元组的类
     表现跟tuple基本一致，只是重写了 __hash__ 和 __eq__ 方法，
     使得在判断两个三元组是否等价时容错性更好。
     """
-    def __init__(self,tokenizer, spo):
-        super.__init__(self,spo)
+    def __init__(self, spo,tokenizer):
         self.spox = (
             tuple(tokenizer.tokenize(spo[0])),
             spo[1],
@@ -33,17 +51,18 @@ class SPO(tuple):
 class Evaluator(keras.callbacks.Callback):
     """评估与保存
     """
-    def __init__(self,tokenizer,optimizer,train_model,object_model,subject_model,dev_data,id2rel):
+    # def __init__(self,tokenizer,optimizer,train_model,object_model,subject_model,dev_data,id2rel):
+    def __init__(self, tokenizer, train_model, object_model, subject_model, dev_data, id2rel):
         self.best_val_f1 = 0.
         self.train_model = train_model
         self.dev_data = dev_data
-        self.optimizer = optimizer
+        # self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.object_model = object_model
         self.subject_model = subject_model
         self.id2rel = id2rel
 
-    def extract_spoes(self,text,):
+    def extract_spoes(self,text):
         """抽取输入text所包含的三元组
         """
         tokens =  self.tokenizer.tokenize(text, maxlen=args.maxlen)
@@ -91,8 +110,8 @@ class Evaluator(keras.callbacks.Callback):
         f = open(args.predfile, 'w', encoding='utf-8')
         pbar = tqdm()
         for d in data:
-            R = set([SPO(self.tokenizer,spo) for spo in self.extract_spoes(d['text'])])
-            T = set([SPO(self.tokenizer,spo) for spo in d['triple_list']])
+            R = set([SPO(spo,self.tokenizer) for spo in self.extract_spoes(d['text'])])
+            T = set([SPO(spo,self.tokenizer) for spo in d['triple_list']])
             X += len(R & T)
             Y += len(R)
             Z += len(T)
@@ -118,15 +137,19 @@ class Evaluator(keras.callbacks.Callback):
 
 
     def on_epoch_end(self, epoch, logs=None):
-        self.optimizer.apply_ema_weights()
+        # self.optimizer.apply_ema_weights()
         f1, precision, recall = self.evaluate(self.dev_data,)
         if f1 >= self.best_val_f1:
             self.best_val_f1 = f1
             self.train_model.save_weights('best_model.weights')
-        self.optimizer.reset_old_weights()
+        # self.optimizer.reset_old_weights()
         print(
             'f1: %.5f, precision: %.5f, recall: %.5f, best f1: %.5f\n' %
-            (f1, precision, recall, self.best_val_f1)
+            (f1,  precision, recall, self.best_val_f1)
         )
+
+
+
+
 
 
